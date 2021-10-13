@@ -13,8 +13,12 @@
 
       <q-toolbar-title>Suri.AI</q-toolbar-title>
 
+      <q-btn class="text-lowercase">174 pts</q-btn>
       <q-btn flat round dense icon="whatshot" />
     </q-toolbar>
+    <div>{{ coords }}</div>
+    <div>{{ address }}</div>
+    <div></div>
     <div class="q-pa-md row items-start q-gutter-md">
 
       <video ref="videoTag" width="300" height="200" controls muted></video>
@@ -72,7 +76,20 @@
 const videoSource = document.createElement('source')
 
 export default {
-  mounted () {
+  data () {
+    return {
+      coords: {},
+      address: ''
+    }
+  },
+  async mounted () {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async position => {
+        this.coords = { lat: position.coords.latitude, lon: position.coords.longitude }
+        const result = await this.$axios.get(`https://us1.locationiq.com/v1/reverse.php?key=pk.59186494722167c1cf3a3cea727c16bd&lat=${this.coords.lat}&lon=${this.coords.lon}&format=json`)
+        this.address = result.data.display_name
+      })
+    }
     let ctx = this.$refs.canvasTag.getContext('2d')
     let timer = null
     this.$refs.videoTag.addEventListener('play', async () => {
@@ -128,21 +145,23 @@ export default {
     async upload (e) {
       console.log(e)
       if (e.target.value) {
-        const reader = new FileReader()
+        if (e.target.files[0].type.includes('image')) {
+          const formData = new FormData()
+          formData.append('file', e.target.files[0])
+          const result = await this.$CompreFaceAPI.post('recognition/recognize', formData)
+          console.log(result.data, videoSource)
+        } else {
+          const reader = new FileReader()
 
-        reader.onload = (re) => {
-          videoSource.setAttribute('src', re.target.result)
-          this.$refs.videoTag.appendChild(videoSource)
-          this.$refs.videoTag.load()
-          this.$refs.videoTag.play()
+          reader.onload = (re) => {
+            videoSource.setAttribute('src', re.target.result)
+            this.$refs.videoTag.appendChild(videoSource)
+            this.$refs.videoTag.load()
+            this.$refs.videoTag.play()
+          }
+
+          reader.readAsDataURL(e.target.files[0])
         }
-
-        reader.readAsDataURL(e.target.files[0])
-
-        // const formData = new FormData()
-        // formData.append('file', e.target.files[0])
-        // const result = await this.$CompreFaceAPI.post('recognition/recognize', formData)
-        // console.log(result.data, videoSource)
 
         // const formData = new FormData()
         // const imagefile = e.target

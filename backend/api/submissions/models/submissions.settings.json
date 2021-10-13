@@ -13,24 +13,28 @@
   "pluginOptions": {},
   "attributes": {
     "latlon": {
-      "type": "json"
+      "type": "json",
+      "required": true
     },
     "media": {
       "model": "file",
       "via": "related",
       "allowedTypes": [
-        "images",
         "files",
+        "images",
         "videos"
       ],
       "plugin": "upload",
-      "required": false,
+      "required": true,
       "pluginOptions": {}
     },
-    "users_permissions_user": {
-      "plugin": "users-permissions",
-      "model": "user",
-      "via": "submissions"
+    "address": {
+      "type": "string",
+      "required": true
+    },
+    "subject": {
+      "type": "string",
+      "required": true
     }
   }
 }
